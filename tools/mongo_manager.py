@@ -183,9 +183,13 @@ class GameLogger(object):
         self.mongodb = self.mongoclient.POKER
 
     def clean_database(self):
-        if os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
-            # self.mongodb.rounds.remove({})
-            self.mongodb.collusion.remove({})
+        #KevinY
+        if 'COMPUTERNAME' in os.environ:
+
+            #OriginalCode
+            if os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
+                # self.mongodb.rounds.remove({})
+                self.mongodb.collusion.remove({})
 
     def isIterable(self, x):
         # use str instead of basestring if Python3

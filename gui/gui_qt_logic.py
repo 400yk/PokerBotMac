@@ -321,7 +321,9 @@ class UIActionAndSignals(QObject):
         self.genetic_algorithm_form.textBrowser.setText(str(r))
         self.genetic_algorithm_dialog.show()
 
-        self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
+        #KevinY
+        #self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
+        self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, l))
 
     def open_help(self, p, l):
         self.help_form = QtWidgets.QWidget()

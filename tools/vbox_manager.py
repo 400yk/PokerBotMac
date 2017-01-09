@@ -10,7 +10,7 @@ class VirtualBoxController(virtualbox.library.IMouse):
     def __init__(self):
         self.logger = logging.getLogger('vm_control')
         self.logger.setLevel(logging.DEBUG)
-        try:
+        try:   
             self.vbox = virtualbox.VirtualBox()
             list = self.get_vbox_list()
             config = ConfigObj("config.ini")

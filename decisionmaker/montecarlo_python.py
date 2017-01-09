@@ -5,7 +5,7 @@ Runs a Montecarlo simulation to calculate the probability of winning with a cert
 import operator
 import logging
 import time
-import winsound
+#import winsound
 import numpy as np
 
 from collections import Counter
@@ -510,7 +510,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
         if collusion_cards != '':
             m.collusion_cards = collusion_cards
-            winsound.Beep(1000, 100)
+            #winsound.Beep(1000, 100)
             if not collusion_player_dropped_out:
                 t.PlayerCardList_and_others.append(collusion_cards)
                 logger.info("Collusion found, player still in game. " + str(collusion_cards))
