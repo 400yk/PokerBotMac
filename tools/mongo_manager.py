@@ -214,7 +214,7 @@ class GameLogger(object):
             if len(" ".join(str(ele) for ele in self.isIterable(val))) < 20:
                 dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
 
-        pDict['computername'] = os.environ['COMPUTERNAME']
+        pDict['computername'] = os.environ['LOGNAME']
 
         Dh = pd.DataFrame(hDict, index=[0])
         Dt = pd.DataFrame(tDict, index=[0])
@@ -256,7 +256,7 @@ class GameLogger(object):
                 i += 1
 
             summary_dict['GameID'] = h.lastGameID
-            summary_dict['ComputerName'] = os.environ['COMPUTERNAME']
+            summary_dict['ComputerName'] = os.environ['LOGNAME']
             summary_dict['logging_timestamp'] = str(datetime.datetime.now())
             summary_dict['FinalOutcome'] = outcome
             summary_dict['FinalStage'] = h.histGameStage
@@ -279,7 +279,7 @@ class GameLogger(object):
         package = {}
         package['gamenumber'] = gamenumber
         package['cards'] = mycards
-        package['computername'] = os.environ['COMPUTERNAME']
+        package['computername'] = os.environ['LOGNAME']
         package['strategy'] = p.current_strategy
         package['timestamp'] = datetime.datetime.utcnow()
         package['gamestage'] = gamestage
@@ -289,7 +289,7 @@ class GameLogger(object):
 
     def get_collusion_cards(self, gamenumber, gamestage):
         gamenumber_part = gamenumber[-7:]
-        computername = os.environ['COMPUTERNAME']
+        computername = os.environ['LOGNAME']
         cursor = self.mongodb.collusion.find(
             {"gamenumber": {"$regex": gamenumber_part}, "computername": {"$ne": computername}})
         record = {}

@@ -7,6 +7,8 @@ import time
 import cv2  # opencv 3.0
 import numpy as np
 import pytesseract
+import imutils #KevinY
+import operator
 from PIL import Image, ImageFilter
 from copy import copy
 
@@ -14,6 +16,7 @@ from decisionmaker.montecarlo_python import MonteCarlo
 from tools.mouse_mover import MouseMoverTableBased
 from .base import Table
 
+cvThreshold = 0.01
 
 class TableScreenBased(Table):
     def get_top_left_corner(self, p):
@@ -44,6 +47,7 @@ class TableScreenBased(Table):
 
     def check_for_button(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         cards = ' '.join(self.mycards)
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -62,6 +66,7 @@ class TableScreenBased(Table):
 
     def check_for_checkbutton(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_status.emit("Check for Check")
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Checking for check button")
@@ -123,6 +128,7 @@ class TableScreenBased(Table):
     def check_for_imback(self, mouse):
         if self.tbl == 'SN': return True
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
@@ -137,6 +143,7 @@ class TableScreenBased(Table):
 
     def check_for_call(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Check for Call")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -154,6 +161,7 @@ class TableScreenBased(Table):
 
     def check_for_betbutton(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Check for betbutton")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -170,6 +178,7 @@ class TableScreenBased(Table):
 
     def check_for_allincall(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.logger.debug("Check for All in call button")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -191,6 +200,7 @@ class TableScreenBased(Table):
 
     def get_table_cards(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Get Table cards")
         self.cardsOnTable = []
@@ -263,6 +273,7 @@ class TableScreenBased(Table):
 
     def get_my_cards(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
 
         def go_through_each_card(img, debugging):
             dic = {}
@@ -279,17 +290,19 @@ class TableScreenBased(Table):
                 dic[key] = min_val
 
                 if debugging:
-                    pass
-                    # dic = sorted(dic.items(), key=operator.itemgetter(1))
-                    # self.logger.debug(str(dic))
+                    #pass
+                    dic = sorted(dic.items(), key=operator.itemgetter(1))
+                    self.logger.debug(str(dic))
 
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
+        ''' self.tlc is the coordinates of top left corner of pokersite window '''
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         # pil_image.show()
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+ 
         # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
         # cv2.THRESH_OTSU)
         go_through_each_card(img, False)
@@ -320,7 +333,9 @@ class TableScreenBased(Table):
 
     def get_other_player_names(self, p):
         if p.selected_strategy['gather_player_names'] == 1:
-            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+            func_dict = self.coo[inspect.stack()[0][3]][self.tbl] #start from player to my left
+            for n, fd in enumerate(func_dict, start=0): #scale up by 2 times
+                func_dict[n] = [i*2 for i in fd]
             self.gui_signals.signal_status.emit("Get player names")
 
             for i, fd in enumerate(func_dict):
@@ -343,6 +358,8 @@ class TableScreenBased(Table):
     def get_other_player_funds(self, p):
         if p.selected_strategy['gather_player_names'] == 1:
             func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+            for n, fd in enumerate(func_dict, start=0): #scale up by 2 times
+                func_dict[n] = [i*2 for i in fd]            
             self.gui_signals.signal_status.emit("Get player funds")
             for i, fd in enumerate(func_dict, start=0):
                 self.gui_signals.signal_progressbar_increase.emit(1)
@@ -356,6 +373,10 @@ class TableScreenBased(Table):
 
     def get_other_player_pots(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        for n, fd in enumerate(func_dict, start=0): #scale up by 2 times
+            if n < 4: # item 5 and 6 aren't list
+                func_dict[n] = [i*2 for i in fd]        
+
         self.gui_signals.signal_status.emit("Get player pots")
         for n in range(5):
             fd = func_dict[n]
@@ -397,6 +418,8 @@ class TableScreenBased(Table):
 
     def get_other_player_status(self, p, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        for n, fd in enumerate(func_dict, start=0): #scale up by 2 times
+            func_dict[n] = [i*2 for i in fd]        
         self.gui_signals.signal_status.emit("Get other playsrs' status")
 
         self.covered_players = 0
@@ -406,7 +429,7 @@ class TableScreenBased(Table):
                                         self.tlc[0] + fd[2], self.tlc[1] + fd[3])
             img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
             count, points, bestfit, minvalue = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
-            self.logger.debug("Player status: " + str(i) + ": " + str(count))
+            self.logger.debug("Player status: " + str(i) + ": " + str(count)) #statue 1 means player still playing and didn't fold
             if count > 0:
                 self.covered_players += 1
                 self.other_players[i]['status'] = 1
@@ -463,9 +486,11 @@ class TableScreenBased(Table):
 
     def get_dealer_position(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        for n, fd in enumerate(func_dict, start=0):
+            func_dict[n] = [i*2 for i in fd]
         self.gui_signals.signal_progressbar_increase.emit(5)
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
-                                    self.tlc[0] + 950, self.tlc[1] + 700)
+                                    self.tlc[0] + 1900, self.tlc[1] + 1400)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit, _ = self.find_template_on_screen(self.dealer, img, 0.05)
@@ -476,7 +501,7 @@ class TableScreenBased(Table):
             return False
 
         self.position_utg_plus = ''
-        for n, fd in enumerate(func_dict, start=0):
+        for n, fd in enumerate(func_dict, start=0): # Start from top center, then move counter-clock-wise
             if point[0] > fd[0] and point[1] > fd[1] and point[0] < fd[2] and point[1] < fd[3]:
                 self.position_utg_plus = n
                 self.dealer_position = (9 - n) % 6  # 0 is myself, 1 is player to the left
@@ -496,6 +521,7 @@ class TableScreenBased(Table):
 
     def get_total_pot_value(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.gui_signals.signal_status.emit("Get Pot Value")
         self.logger.debug("Get TotalPot value")
@@ -525,6 +551,7 @@ class TableScreenBased(Table):
 
     def get_round_pot_value(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(2)
         self.gui_signals.signal_status.emit("Get round pot value")
         self.logger.debug("Get round pot value")
@@ -554,6 +581,7 @@ class TableScreenBased(Table):
 
     def get_my_funds(self, h, p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Get my funds")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -593,6 +621,7 @@ class TableScreenBased(Table):
 
     def get_current_call_value(self, p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_status.emit("Get Call value")
         self.gui_signals.signal_progressbar_increase.emit(5)
 
@@ -618,6 +647,7 @@ class TableScreenBased(Table):
 
     def get_current_bet_value(self, p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.gui_signals.signal_status.emit("Get Bet Value")
         self.logger.debug("Get bet value")
@@ -660,6 +690,7 @@ class TableScreenBased(Table):
     def get_lost_everything(self, h, t, p, gui_signals):
         if self.tbl == 'SN': return True
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
@@ -732,6 +763,7 @@ class TableScreenBased(Table):
 
     def get_game_number_on_screen(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        func_dict.update((x, y*2) for x, y in func_dict.items()) #Scale up by 2
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         basewidth = 200

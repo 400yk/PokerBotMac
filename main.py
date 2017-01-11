@@ -1,4 +1,4 @@
-import matplotlib
+import matplotlib, pdb
 
 matplotlib.use('Qt5Agg')
 import logging, logging.handlers
@@ -98,8 +98,11 @@ class ThreadManager(threading.Thread):
                                                     t.maxEquityCall, t.max_X, t.maxEquityBet)
 
     def run(self):
+        #pdb.set_trace() #To debug in a thread, has to use set_trace()
         h = History()
-        preflop_url = u.get_preflop_sheet_url()
+        #preflop_url = u.get_preflop_sheet_url()
+        #KevinY
+        preflop_url = 'preflop.xlsx'
         h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
 
         self.game_logger.clean_database()
@@ -122,6 +125,7 @@ class ThreadManager(threading.Thread):
                 mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 mouse.move_mouse_away_from_buttons_jump
 
+                #pdb.set_trace()
                 ready = t.take_screenshot(True, p) and \
                         t.get_top_left_corner(p) and \
                         t.check_for_captcha(mouse) and \
@@ -230,8 +234,8 @@ if __name__ == '__main__':
         "This is a testversion and error messages will appear here. The user interface has opened in a separate window.")
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook
-    u = UpdateChecker()
-    u.check_update(version)
+    #u = UpdateChecker()
+    #u.check_update(version)
 
 
     def exception_hook(exctype, value, traceback):

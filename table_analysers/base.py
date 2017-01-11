@@ -3,7 +3,7 @@ import re
 import sys
 import time
 import logging
-
+import imutils
 import cv2  # opencv 3.0
 import numpy as np
 import pytesseract
@@ -42,8 +42,10 @@ class Table(object):
                     # if self.tbl=='SN':
                     #     self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
 
-                    self.cardImages[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
-
+                    cardpng = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
+                    #KevinY
+                    scale = 2
+                    self.cardImages[x + y.upper()] = imutils.resize(cardpng,height=int(cardpng.shape[0]*scale))
 
                     # (thresh, self.cardImages[x + y]) =
                     # cv2.threshold(self.cardImages[x + y], 128, 255,
@@ -53,10 +55,14 @@ class Table(object):
 
         name = "pics/" + self.tbl[0:2] + "/button.png"
         template = Image.open(name)
-        self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        scale = 2
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)      
+        self.button = imutils.resize(template,height=int(template.shape[0]*scale))  
 
         name = "pics/" + self.tbl[0:2] + "/topleft.png"
-        template = Image.open(name)
+        #KevinY
+        template = Image.open(name)   
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
         if self.tbl[0:2] == 'SN':
@@ -74,39 +80,57 @@ class Table(object):
 
         name = "pics/" + self.tbl[0:2] + "/coveredcard.png"
         template = Image.open(name)
-        self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)              
+        self.coveredCardHolder = imutils.resize(template,height=int(template.shape[0]*scale))  
 
         name = "pics/" + self.tbl[0:2] + "/imback.png"
         template = Image.open(name)
-        self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)      
+        self.ImBack = imutils.resize(template,height=int(template.shape[0]*scale))
+           
         name = "pics/" + self.tbl[0:2] + "/check.png"
         template = Image.open(name)
-        self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.check = imutils.resize(template,height=int(template.shape[0]*scale)) 
 
         name = "pics/" + self.tbl[0:2] + "/call.png"
         template = Image.open(name)
-        self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)             
+        self.call = imutils.resize(template,height=int(template.shape[0]*scale)) 
 
         name = "pics/" + self.tbl[0:2] + "/smalldollarsign1.png"
         template = Image.open(name)
-        self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.smallDollarSign1 = imutils.resize(template,height=int(template.shape[0]*scale))
 
         name = "pics/" + self.tbl[0:2] + "/allincallbutton.png"
         template = Image.open(name)
-        self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.allInCallButton = imutils.resize(template,height=int(template.shape[0]*scale))   
 
         name = "pics/" + self.tbl[0:2] + "/lostEverything.png"
         template = Image.open(name)
-        self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.lostEverything = imutils.resize(template,height=int(template.shape[0]*scale))  
 
         name = "pics/" + self.tbl[0:2] + "/dealer.png"
         template = Image.open(name)
-        self.dealer = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.dealer = imutils.resize(template,height=int(template.shape[0]*scale))
 
         name = "pics/" + self.tbl[0:2] + "/betbutton.png"
         template = Image.open(name)
-        self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        self.betbutton = imutils.resize(template,height=int(template.shape[0]*scale))  
 
     def load_coordinates(self):
         with open('coordinates.txt', 'r') as inf:
@@ -297,7 +321,12 @@ class Table(object):
         self.gui_signals.signal_label_number_update.emit('gamenumber', str(int(n)))
 
         total_winnings = self.game_logger.get_strategy_return(p.current_strategy, 9999999)
-        winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100
+        #KevinY
+        if n > 0:
+            winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100
+        else:
+            winnings_per_bb_100 = 0
+            
         self.logger.info("Total Strategy winnings: %s", total_winnings)
         self.logger.info("Winnings in BB per 100 hands: %s", np.round(winnings_per_bb_100,2))
         self.gui_signals.signal_label_number_update.emit('winnings', str(np.round(winnings_per_bb_100, 2)))

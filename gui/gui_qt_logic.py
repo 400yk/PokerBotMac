@@ -433,8 +433,8 @@ class UIActionAndSignals(QObject):
 
         self.ui_editor.pushButton_save_current_strategy.setEnabled(False)
         try:
-            if self.p.selected_strategy['computername'] == os.environ['COMPUTERNAME'] or \
-                            os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
+            if self.p.selected_strategy['computername'] == os.environ['LOGNAME'] or \
+                            os.environ['LOGNAME'] == 'NICOLAS-ASUS' or os.environ['LOGNAME'] == 'Home-PC-ND':
                 self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
         except Exception as e:
             pass
@@ -526,7 +526,7 @@ class UIActionAndSignals(QObject):
             self.strategy_dict[key] = func.value() / value
         self.strategy_dict['Strategy'] = name
         self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
-        self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
+        self.strategy_dict['computername'] = os.environ['LOGNAME']
 
         self.strategy_dict['use_relative_equity'] = int(self.ui_editor.use_relative_equity.isChecked())
         self.strategy_dict['use_pot_multiples'] = int(self.ui_editor.use_pot_multiples.isChecked())

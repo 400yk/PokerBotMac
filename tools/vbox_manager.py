@@ -11,7 +11,7 @@ class VirtualBoxController(virtualbox.library.IMouse):
         self.logger = logging.getLogger('vm_control')
         self.logger.setLevel(logging.DEBUG)
         try:   
-            self.vbox = virtualbox.VirtualBox()
+            self.vbox = virtualbox.VirtualBox() #KevinY: here error occurs, no _xpcom module
             list = self.get_vbox_list()
             config = ConfigObj("config.ini")
             self.control_name = config['control']
