@@ -111,6 +111,7 @@ class ThreadManager(threading.Thread):
         p.read_strategy()
 
         preflop_state = CurrentHandPreflopState()
+        p.fast_fold_decision_turned_check = False
 
         while True:
             if self.gui_signals.pause_thread:
@@ -126,22 +127,27 @@ class ThreadManager(threading.Thread):
                 mouse.move_mouse_away_from_buttons_jump
 
                 #pdb.set_trace()
-                ready = t.take_screenshot(True, p) and \
-                        t.get_top_left_corner(p) and \
-                        t.check_for_captcha(mouse) and \
-                        t.get_lost_everything(h, t, p, gui_signals) and \
-                        t.check_for_imback(mouse) and \
-                        t.get_my_cards(h) and \
+                ready_screenshot = False
+                ready_screenshot = t.take_screenshot(True, p)
+                # to see if first round, to improve speed
+                if (not hasattr(h, 'round_number') or h.round_number == 0): 
+                    ready = ready_screenshot and \
+                            t.get_top_left_corner(p) and \
+                            t.check_for_imback(mouse) and \
+                            t.get_other_player_names(p,h) and \
+                            t.get_my_cards(h) and \
+                            t.get_dealer_position() and \
+                            t.get_round_number(h) and \
+                            t.check_fast_fold(h, p, mouse) 
+                            
+
+                ready = ready_screenshot and \
                         t.get_new_hand(mouse, h, p) and \
                         t.get_table_cards(h) and \
                         t.upload_collusion_wrapper(p, h) and \
-                        t.get_dealer_position() and \
-                        t.get_snowie_advice(p, h) and \
-                        t.check_fast_fold(h, p, mouse) and \
                         t.check_for_button() and \
                         t.get_round_number(h) and \
                         t.init_get_other_players_info() and \
-                        t.get_other_player_names(p) and \
                         t.get_other_player_funds(p) and \
                         t.get_other_player_pots() and \
                         t.get_total_pot_value(h) and \
@@ -173,6 +179,10 @@ class ThreadManager(threading.Thread):
                 self.logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
                 mouse_target = d.decision
+                if p.fast_fold_decision_turned_check == True: 
+                    self.logger.info("Fast fold decision turned check")
+                    mouse_target = 'Check'
+                p.fast_fold_decision_turned_check = False
                 if mouse_target == 'Call' and t.allInCallButton:
                     mouse_target = 'Call2'
                 mouse.mouse_action(mouse_target, t.tlc)
@@ -181,7 +191,7 @@ class ThreadManager(threading.Thread):
 
                 filename = str(h.GameID) + "_" + str(t.gameStage) + "_" + str(h.round_number) + ".png"
                 self.logger.debug("Saving screenshot: " + filename)
-                pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0], t.tlc[1], t.tlc[0] + 950, t.tlc[1] + 650)
+                pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0], t.tlc[1], t.tlc[0] + 950*2, t.tlc[1] + 650*2)
                 pil_image.save("log/screenshots/" + filename)
 
                 self.gui_signals.signal_status.emit("Logging data")

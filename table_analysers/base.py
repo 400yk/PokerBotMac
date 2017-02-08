@@ -128,9 +128,15 @@ class Table(object):
 
         name = "pics/" + self.tbl[0:2] + "/betbutton.png"
         template = Image.open(name)
+        #KevinY, don't need to scale since it's cropped from mac screenshot
+        self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+
         #KevinY
-        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-        self.betbutton = imutils.resize(template,height=int(template.shape[0]*scale))  
+        name = "pics/" + self.tbl[0:2] + "/fold.png"
+        template = Image.open(name)
+        #KevinY
+        template = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)             
+        self.fold = imutils.resize(template,height=int(template.shape[0]*scale))         
 
     def load_coordinates(self):
         with open('coordinates.txt', 'r') as inf:
@@ -210,7 +216,7 @@ class Table(object):
         def fix_number(t, force_method):
             t = t.replace("I", "1").replace("Â°lo", "").replace("O", "0").replace("o", "0") \
                 .replace("-", ".").replace("D", "0").replace("I", "1").replace("_", ".").replace("-", ".") \
-                .replace("B", "8").replace("..", ".")
+                .replace("B", "8").replace("..", ".").replace("S", "5").replace("L", "10")
             t = re.sub("[^0123456789\.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -244,7 +250,7 @@ class Table(object):
         try:
             img_orig.save('pics/ocr_debug_' + name + '.png')
         except:
-            self.logger.warning("Coulnd't safe debugging png file for ocr")
+            self.logger.warning("Couldn't safe debugging png file for ocr")
 
         basewidth = 300
         wpercent = (basewidth / float(img_orig.size[0]))
@@ -295,7 +301,12 @@ class Table(object):
             for i, j in enumerate(lst):
                 self.logger.debug("OCR of " + name + " method " + str(i) + ": " + str(j))
                 lst[i] = fix_number(lst[i], force_method) if lst[i] != '' else lst[i]
-                final_value = lst[i] if final_value == '' else final_value
+                if final_value == '':
+                    if "." in lst[i]: # if "." appears, likely it's a , 
+                        lst[i] = str(int(float(lst[i]) * 1000))
+                    final_value = lst[i] 
+                    if lst[i] == "All In":
+                        final_value = "0"
 
             self.logger.info(name + " FINAL VALUE: " + str(final_value))
             if final_value == '':
@@ -326,7 +337,7 @@ class Table(object):
             winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100
         else:
             winnings_per_bb_100 = 0
-            
+
         self.logger.info("Total Strategy winnings: %s", total_winnings)
         self.logger.info("Winnings in BB per 100 hands: %s", np.round(winnings_per_bb_100,2))
         self.gui_signals.signal_label_number_update.emit('winnings', str(np.round(winnings_per_bb_100, 2)))

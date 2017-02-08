@@ -35,7 +35,7 @@ class MouseMover(VirtualBoxController):
     def mouse_mover(self, x1, y1, x2, y2):
         speed = .2
         stepMin = 7
-        stepMax = 50
+        stepMax = 20
         rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0])) #randomize a speed and gradually move away
         rd2 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
 
@@ -47,12 +47,12 @@ class MouseMover(VirtualBoxController):
         for k in range(0, max(0, len(ya) - len(xa))):
             xa.append(x2)
 
-        xTremble = 20
-        yTremble = 20
+        xTremble = 1
+        yTremble = 1
 
         for i in range(len(max(xa, ya))):
-            x = xa[i] + int(+random.random() * xTremble)
-            y = ya[i] + int(+random.random() * yTremble)
+            x = xa[i] + (random.random()-0.5) * xTremble
+            y = ya[i] + (random.random()-0.5) * yTremble
             if self.vbox_mode:
                 self.mouse_move_vbox(x, y)
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
@@ -72,8 +72,8 @@ class MouseMover(VirtualBoxController):
 
 
     def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
-        xrand = int(np.random.uniform(0, buttonToleranceX, 1)[0])
-        yrand = int(np.random.uniform(0, buttonToleranceY, 1)[0])
+        xrand = int(np.random.uniform(0, buttonToleranceX, 1)[0] - 0.5*buttonToleranceX)
+        yrand = int(np.random.uniform(0, buttonToleranceY, 1)[0] - 0.5*buttonToleranceY)
 
         if self.vbox_mode:
             self.mouse_move_vbox(x2 + xrand, y2 + yrand)
@@ -182,7 +182,7 @@ class MouseMoverTableBased(MouseMover):
                 #self.mouse_mover(x1, y1, action[2]*scale + tlx, action[3]*scale + tly)
                 #self.mouse_clicker(action[2]*scale + tlx, action[3]*scale + tly,action[4]*scale, action[5]*scale)
                 self.mouse_mover(x1, y1, action[2]*scale, action[3]*scale)
-                self.mouse_clicker(action[2]*scale, action[3]*scale,action[2]*scale, action[3]*scale)
+                self.mouse_clicker(action[2]*scale, action[3]*scale, action[4]*scale, action[5]*scale)
 
         time.sleep(0.2)
         self.move_mouse_away_from_buttons()
